@@ -1,69 +1,50 @@
 /**
- * Created by Arthur Sun
  * Copyright © Arthur Sun
 **/
 
+import java.util.*;
 PFont font; // mono
 World world = new World();
 Player you;
-Player p2;
-Particle pt;
-PImage face;
+PGraphics textGraphics;
+float textResolution = 16f;
 
 void setup(){
   fullScreen(P3D);
+  frameRate(60);
+  background(0);
   smooth();
-  perspective(PI/3f, float(width)/float(height), 16f, 65536f);
+  perspective(PI/3f, float(width)/float(height), 1f, 65536f);
   font = createFont("monospace", 80);
-  textFont(font);
-  face = loadImage("face.png");
   you = new Player();
   world.players.add(you);
   world.you = you;
-  p2 = new Player();
-  p2.pos.set(1,-2,-20);
-  world.players.add(p2);
-  p2.texture = face;
-  textMode(MODEL);
   textureMode(NORMAL);
   textureWrap(REPEAT);
+  Cuboid o1 = new Cuboid();
+  world.objects.add(o1);
+  o1.cuboid.p.set(0,0,-200);
+  o1.cuboid.r.set(80,50,80);
+  o1.setText("HELLO!!!", "YOU", "180", "Great!", "Arthur", "END" ,color(255),color(25));
 }
 
-void stats(){
-  noLights();
-  textAlign(CENTER);
-  textSize(2);
-  stroke(255);
-  pushMatrix();
-  translate(you.pos.x, you.pos.y, you.pos.z);
-  translate(width/2f, height/2f);
-  translate(-5,-5,-30);
-  text((int)frameRate+" FPS", 0, 0);
-  popMatrix();
+void setTextGraphicsSize(int a, int b){
+  textGraphics = createGraphics(a,b,P2D);
+  textGraphics.smooth();
 }
 
-void lighting(){
-  directionalLight(235,255,205,-1,1,-0.5);
-  directionalLight(255,235,205,-1,0.8,-1);
-  directionalLight(235,235,225,1.5,-0.6,1);
+void writeText(String text, color back, color t, float x, float y){
+  textGraphics.beginDraw();
+  textGraphics.background(back);
+  textGraphics.textAlign(CENTER, CENTER);
+  textGraphics.fill(t);
+  textGraphics.textSize(textGraphics.width/text.length()*1.6f);
+  textGraphics.text(text, float(textGraphics.width)*x, float(textGraphics.height)*y);
+  textGraphics.endDraw();
 }
 
 void draw(){
   background(0);
-  lighting();
-  if(keyPressed && key == ' '){
-    for(int n=0;n<60;n++){
-      pt = new Particle(FIRE);
-      pt.god = world;
-      pt.p.set(0,0,-300);
-      pt.v.set(PVector.random3D());
-      pt.v.mult(random(2.5f));
-      world.ps.add(pt);
-    }
-  }
-  if(keyPressed && key == 'p'){
-    println(world.ps.size());
-  }
   world.update();
   world.display();
 }

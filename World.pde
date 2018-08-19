@@ -1,21 +1,26 @@
-interface Object
-{
-  void update();
-  void display();
-};
+void lighting(){
+  directionalLight(235,255,205,-1,1,-0.5);
+  directionalLight(255,235,205,-1,0.8,-1);
+  directionalLight(235,235,225,1.5,-0.6,1);
+}
 
 class World
 {
   ArrayList<Particle> ps = new ArrayList<Particle>();
   ArrayList<Player> players = new ArrayList<Player>();
+  ArrayList<Object> objects = new ArrayList<Object>();
+  HashMap<String, ArrayList<Particle>> map = new HashMap<String, ArrayList<Particle>>();
+  HashSet<String> smap = new HashSet<String>();
+  HashSet<String> imap = new HashSet<String>();
   int last = millis();
   int leftOvers = 0;
   int dt = 16;
-  int maxits = 3;
+  int maxits = 4;
   float ax = 0f;
   float ay = 0f;
   float az = 0f;
   float dx, dy, dz;
+  float da = 0.01f;
   PVector gravity = new PVector(0,0.2,0);
   Player you;
   World(){}
@@ -43,7 +48,13 @@ class World
       }
       o.update();
     }
-    float da = 0.01f;
+    for(int i=objects.size()-1;i>=0;i--){
+      Object o = objects.get(i);
+      o.update();
+    }
+    Interactions();
+  }
+  void Interactions(){
     ax = constrain(ax, -PI/2f+da, PI/2f-da);
     float a = cos(ax);
     dx = a * sin(ay);
@@ -62,12 +73,36 @@ class World
       }
     }
   }
+  void solve(){
+    for(String i : smap){
+      ArrayList<Particle> al = map.get(i);
+      al.clear();
+    }
+    smap.clear();
+    for(Particle p : ps){
+      int x = floor(p.p.x/Particle.R/2f);
+      int y = floor(p.p.y/Particle.R/2f);
+      int z = floor(p.p.z/Particle.R/2f);
+      String i = x+"|"+y+"|"+z;
+      if(!imap.contains(i)){
+        map.put(i, new ArrayList<Particle>());
+        imap.add(i);
+      }
+      ArrayList<Particle> al = map.get(i);
+      al.add(p);
+      smap.add(i);
+    }
+  }
   void display(){
+    lighting();
     pushMatrix();
     translate(width/2f, height/2f);
     for(Player p : players){
       if(p == you) continue;
       p.display();
+    }
+    for(Object o : objects){
+      o.display();
     }
     noLights();
     for(Particle o : ps){
